@@ -81,7 +81,41 @@ function App() {
     });
   };
 
-  //
+  const getEvents = () => {
+    gapi.load("client:auth2", () => {
+      console.log("loaded client");
+
+      gapi.client.init({
+        apiKey: API_KEY,
+        clientId: CLIENT_ID,
+        discoveryDocs: DISCOVERY_DOC,
+        scope: SCOPES,
+        plugin_name: "PLUGIN",
+      });
+
+      gapi.client.load("calendar", "v3", () => console.log("loaded!"));
+
+      gapi.auth2
+        .getAuthInstance()
+        .signIn()
+        .then(() => {
+          //get events
+          gapi.client.calendar.events
+            .list({
+              calendarId: "primary",
+              timeMin: new Date().toISOString(),
+              showDeleted: false,
+              singleEvents: true,
+              maxResults: 10,
+              orderBy: "startTime",
+            })
+            .then((res) => {
+              const events = res.result.items;
+              console.log("EVENTS", events);
+            });
+        });
+    });
+  };
 
   return (
     <div className="App">
@@ -115,6 +149,9 @@ function App() {
         </Form.Group>
         <Button type="submit" className="btn btn-primary">
           Add Event
+        </Button>
+        <Button onClick={getEvents} className="btn btn-primary">
+          Get Events
         </Button>
       </Form>
     </div>
